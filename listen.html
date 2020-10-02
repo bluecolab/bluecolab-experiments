@@ -1,0 +1,290 @@
+<head>
+<title>Listen</title>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/sonification.js"></script>
+
+<div id="container"></div>
+
+<div id="controls" style="">
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+    <button id="rewind">Rewind</button>
+    <input type="range" id="speed" name="Speed" 
+         min="0.5" max="2" value="1" step="0.05">
+    <label for="speed">Speed</label>
+</div>
+
+<pre id="csv_data" style="display:none">Date,Average Temp
+6/13/2019,20.5825
+6/14/2019,19.52173913
+6/15/2019,19.76875
+6/16/2019,19.82641026
+6/17/2019,20.49028571
+6/18/2019,21.53517857
+6/19/2019,22.2640625
+6/20/2019,22.93416667
+6/21/2019,22.96293103
+7/5/2019,26.14714286
+7/6/2019,25.94333333
+7/7/2019,23.96666667
+7/8/2019,23.3484375
+7/9/2019,23.31010417
+7/10/2019,23.608125
+7/11/2019,24.156875
+7/12/2019,24.3596875
+7/13/2019,24.18708333
+7/14/2019,24.19729167
+7/15/2019,24.27270833
+7/16/2019,24.60385417
+7/17/2019,24.95197917
+7/18/2019,24.38822917
+7/19/2019,24.10416667
+7/20/2019,23.91885417
+7/21/2019,23.575625
+7/22/2019,22.631875
+7/23/2019,22.65822917
+7/24/2019,23.148125
+7/25/2019,23.28375
+7/26/2019,23.26427083
+7/27/2019,23.77364583
+7/28/2019,24.06375
+7/29/2019,24.33666667
+7/30/2019,23.79135417
+7/31/2019,23.12875
+8/1/2019,23.3725
+8/2/2019,23.74677083
+8/3/2019,24.12416667
+8/4/2019,22.81489583
+8/5/2019,22.3784375
+8/6/2019,23.24697917
+8/7/2019,23.5775
+8/8/2019,23.57447917
+8/9/2019,23.59822917
+8/10/2019,23.571875
+8/11/2019,23.74510417
+8/12/2019,23.75927083
+8/13/2019,23.78
+8/14/2019,23.78
+8/18/2019,23.71
+8/22/2019,23.73
+8/23/2019,23.75289474
+8/24/2019,23.30520833
+8/25/2019,23.31769231
+8/26/2019,23.21322917
+8/27/2019,23.4021875
+8/28/2019,23.8728125
+8/29/2019,24.471875
+8/30/2019,25.00885417
+8/31/2019,25.24
+9/1/2019,24.629375
+9/2/2019,23.98177083
+9/3/2019,24.00885417
+9/4/2019,24.36208333
+9/5/2019,24.75177083
+9/6/2019,25.18395833
+9/7/2019,25.36885417
+9/8/2019,24.41223404
+9/9/2019,22.37104167
+9/10/2019,20.26125
+9/11/2019,19.085
+9/12/2019,19.23472527
+9/13/2019,19.57
+9/14/2019,19.9725
+9/15/2019,20.48697917
+9/16/2019,21.19270833
+9/17/2019,21.76552083
+9/18/2019,22.10489583
+9/19/2019,22.21  
+</pre>
+<script>
+// Sonification options
+var sdInstruments = [{
+        instrument: 'sineMajor',
+        instrumentMapping: {
+            duration: 200,
+            frequency: 'y',
+            volume: 0.7,
+            pan: -1
+        },
+        instrumentOptions: {
+            minFrequency: 300,
+            maxFrequency: 500
+        }
+    }],
+    nyInstruments = [{
+        instrument: 'triangleMajor',
+        instrumentMapping: {
+            duration: 200,
+            frequency: 'y',
+            volume: 0.6,
+            pan: 1
+        },
+        instrumentOptions: {
+            minFrequency: 220,
+            maxFrequency: 1900
+        }
+    }];
+
+// Point of interest options
+var poiTime = Date.UTC(2018, 4, 6),
+    poiEarcon = {
+        // Define the earcon we want to play for the point of interest
+        earcon: new Highcharts.sonification.Earcon({
+            instruments: [{
+                instrument: 'squareMajor',
+                playOptions: {
+                    // Play a quick rising frequency
+                    frequency: function (time) {
+                        return time * 1760 + 440;
+                    },
+                    volume: 0.1,
+                    duration: 200
+                }
+            }]
+        }),
+        // Play this earcon if we hit the point of interest
+        condition: function (point) {
+            return point.x === poiTime;
+        }
+    };
+
+// Create the chart
+var chart = Highcharts.chart('container', {
+    chart: {
+        type: 'spline'
+    },
+    title: {
+        text: 'Choate Pond'
+    },
+    subtitle: {
+        text: 'Daily temperature averages'
+    },
+    yAxis: {
+        title: {
+            text: 'Temperature (°C)'
+        }
+    },
+    xAxis: {
+        type: 'datetime',
+        plotLines: [{
+            value: poiTime,
+            dashStyle: 'dash',
+            width: 1,
+            color: '#d33'
+        }]
+    },
+    tooltip: {
+        split: true,
+        valueDecimals: 0,
+        valueSuffix: '°C'
+    },
+    plotOptions: {
+        series: {
+            marker: {
+                enabled: false
+            },
+            cursor: 'pointer',
+            // Sonify points on click
+            point: {
+                events: {
+                    click: function () {
+                        // Sonify all points at this x value
+                        var targetX = this.x,
+                            chart = this.series.chart;
+                        chart.series.forEach(function (series) {
+                            // Map instruments to the options for this series
+                            var instruments = series.options.id === 'sd' ?
+                                sdInstruments : nyInstruments;
+                            // See if we have a point with the targetX
+                            series.points.some(function (point) {
+                                if (point.x === targetX) {
+                                    point.sonify({
+                                        instruments: instruments
+                                    });
+                                    return true;
+                                }
+                                return false;
+                            });
+                        });
+                    }
+                }
+            }
+        }
+    },
+    // Data source: https://www.ncdc.noaa.gov
+    data: {
+        csv: document.getElementById('csv_data').innerHTML,
+        firstRowAsNames: true,
+        
+    },
+    series: [{
+        name: 'San Diego',
+        id: 'sd',
+        color: '#f4b042'
+    }]
+});
+
+
+// Utility function that highlights a point
+function highlightPoint(event, point) {
+    var chart = point.series.chart,
+        hasVisibleSeries = chart.series.some(function (series) {
+            return series.visible;
+        });
+    if (!point.isNull && hasVisibleSeries) {
+        point.onMouseOver(); // Show the hover marker and tooltip
+    } else {
+        if (chart.tooltip) {
+            chart.tooltip.hide(0);
+        }
+    }
+}
+
+
+// On speed change we reset the sonification
+document.getElementById('speed').onchange = function () {
+    chart.cancelSonify();
+};
+
+
+// Add sonification button handlers
+document.getElementById('play').onclick = function () {
+    if (!chart.sonification.timeline || chart.sonification.timeline.atStart()) {
+        chart.sonify({
+            duration: 5000 / document.getElementById('speed').value,
+            order: 'simultaneous',
+            pointPlayTime: 'x',
+            seriesOptions: [{
+                id: 'sd',
+                instruments: sdInstruments,
+                onPointStart: highlightPoint,
+                // Play earcon at point of interest
+                earcons: [poiEarcon]
+            }, {
+                id: 'ny',
+                instruments: nyInstruments,
+                onPointStart: highlightPoint
+            }],
+            // Delete timeline on end
+            onEnd: function () {
+                if (chart.sonification.timeline) {
+                    delete chart.sonification.timeline;
+                }
+            }
+        });
+    } else {
+        chart.resumeSonify();
+    }
+};
+document.getElementById('pause').onclick = function () {
+    chart.pauseSonify();
+};
+document.getElementById('rewind').onclick = function () {
+    chart.rewindSonify();
+};
+</script>
+</head>
+<body>
+
+</body>
