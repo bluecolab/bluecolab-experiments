@@ -99,7 +99,7 @@
 </pre>
 <script>
 // Sonification options
-var sdInstruments = [{
+var soundsLike = [{
         instrument: 'sineMajor',
         instrumentMapping: {
             duration: 200,
@@ -111,43 +111,7 @@ var sdInstruments = [{
             minFrequency: 300,
             maxFrequency: 500
         }
-    }],
-    nyInstruments = [{
-        instrument: 'triangleMajor',
-        instrumentMapping: {
-            duration: 200,
-            frequency: 'y',
-            volume: 0.6,
-            pan: 1
-        },
-        instrumentOptions: {
-            minFrequency: 220,
-            maxFrequency: 1900
-        }
     }];
-
-// Point of interest options
-var poiTime = Date.UTC(2018, 4, 6),
-    poiEarcon = {
-        // Define the earcon we want to play for the point of interest
-        earcon: new Highcharts.sonification.Earcon({
-            instruments: [{
-                instrument: 'squareMajor',
-                playOptions: {
-                    // Play a quick rising frequency
-                    frequency: function (time) {
-                        return time * 1760 + 440;
-                    },
-                    volume: 0.1,
-                    duration: 200
-                }
-            }]
-        }),
-        // Play this earcon if we hit the point of interest
-        condition: function (point) {
-            return point.x === poiTime;
-        }
-    };
 
 // Create the chart
 var chart = Highcharts.chart('container', {
@@ -168,7 +132,6 @@ var chart = Highcharts.chart('container', {
     xAxis: {
         type: 'datetime',
         plotLines: [{
-            value: poiTime,
             dashStyle: 'dash',
             width: 1,
             color: '#d33'
@@ -194,8 +157,7 @@ var chart = Highcharts.chart('container', {
                             chart = this.series.chart;
                         chart.series.forEach(function (series) {
                             // Map instruments to the options for this series
-                            var instruments = series.options.id === 'sd' ?
-                                sdInstruments : nyInstruments;
+                            var instruments = soundsLike;
                             // See if we have a point with the targetX
                             series.points.some(function (point) {
                                 if (point.x === targetX) {
@@ -212,15 +174,14 @@ var chart = Highcharts.chart('container', {
             }
         }
     },
-    // Data source: https://www.ncdc.noaa.gov
+    // Data source: Blue Colab Pace University
     data: {
         csv: document.getElementById('csv_data').innerHTML,
         firstRowAsNames: true,
-        
     },
     series: [{
-        name: 'San Diego',
-        id: 'sd',
+        name: 'temp',
+        id: 'tmp',
         color: '#f4b042'
     }]
 });
@@ -256,14 +217,8 @@ document.getElementById('play').onclick = function () {
             order: 'simultaneous',
             pointPlayTime: 'x',
             seriesOptions: [{
-                id: 'sd',
-                instruments: sdInstruments,
-                onPointStart: highlightPoint,
-                // Play earcon at point of interest
-                earcons: [poiEarcon]
-            }, {
-                id: 'ny',
-                instruments: nyInstruments,
+                id: 'temp',
+                instruments: soundsLike,
                 onPointStart: highlightPoint
             }],
             // Delete timeline on end
